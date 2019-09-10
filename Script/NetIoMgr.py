@@ -2,7 +2,7 @@ from Connection import Connection
 from select import select
 
 
-class NetIoMgr(object):
+class NetIOMgr(object):
 
 	def __init__(self, server):
 		self._server = server

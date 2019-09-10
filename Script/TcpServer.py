@@ -1,5 +1,5 @@
 from Acceptor import Acceptor
-from NetIoMgr import NetIoMgr
+from NetIOMgr import NetIOMgr
 
 
 class TcpServer(object):
@@ -8,7 +8,7 @@ class TcpServer(object):
 		self._host = config.get("host", None)
 		self._port = config.get("port", None)
 		self._acceptor = Acceptor(self)
-		self._net_io_mgr = NetIoMgr(self)
+		self._net_io_mgr = NetIOMgr(self)
 
 	def run(self):
 		self._acceptor.start(self._host, self._port)
