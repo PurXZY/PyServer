@@ -32,10 +32,10 @@ class NetIOMgr(object):
 	def update(self):
 		in_fds, out_fds, _ = select(self._need_read_sockets, self._need_write_sockets, [], 0.1)
 		for fd in in_fds:
-			conn = self._connections.get(fd, None)
+			conn = self._connections.get(fd.fileno(), None)
 			if conn:
 				conn.handle_read_event()
 		for fd in out_fds:
-			conn = self._connections.get(fd, None)
+			conn = self._connections.get(fd.fileno(), None)
 			if conn:
 				conn.handle_write_event()

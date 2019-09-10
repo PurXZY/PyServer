@@ -12,6 +12,7 @@ class TcpServer(object):
 
 	def run(self):
 		self._acceptor.start(self._host, self._port)
+		print "Server Start"
 		while True:
 			self._acceptor.update()
 			self._net_io_mgr.update()

@@ -1,7 +1,8 @@
 import struct
 import sys
 
-HeaderSize = 4
+MsgLenSize = 4
+MsgIdSize = 4
 
 
 class Connection(object):
@@ -28,15 +29,18 @@ class Connection(object):
 		else:
 			self._receive_data_buffer += data
 			while True:
-				if len(self._receive_data_buffer) < HeaderSize:
+				if len(self._receive_data_buffer) < MsgLenSize:
 					break
-				head_pack = struct.unpack('!I', self._receive_data_buffer[:HeaderSize])
+				head_pack = struct.unpack('!I', self._receive_data_buffer[:MsgLenSize])
 				body_size = head_pack[0]
-				if len(self._receive_data_buffer) < HeaderSize + body_size:
+				if len(self._receive_data_buffer) < MsgLenSize + body_size:
 					break
-				body = self._receive_data_buffer[HeaderSize:HeaderSize + body_size]
-				self._receive_data_buffer = self._receive_data_buffer[HeaderSize + body_size:]
-				self.handle_new_message(body)
+				body = self._receive_data_buffer[MsgLenSize:MsgLenSize + body_size]
+				self._receive_data_buffer = self._receive_data_buffer[MsgLenSize + body_size:]
+				msg_pack = struct.unpack('!I', body[:MsgIdSize])
+				msg_id = msg_pack[0]
+				body = body[MsgIdSize:]
+				self.handle_new_message(msg_id, body)
 
 	def handle_write_event(self):
 		length = self._socket_fd.send(self._send_data_buffer)
@@ -44,14 +48,16 @@ class Connection(object):
 		if not len(self._send_data_buffer):
 			self._net_io_mgr.remove_write_need(self._socket_fd)
 
-	def handle_new_message(self, message_data):
-		print message_data
-		self.send_data("client ack")
+	def handle_new_message(self, message_id, message_data):
+		print "new message id(%s) data(%s)" % (message_id, message_data)
+		self.send_data(122, "client ack")
 
-	def send_data(self, data):
-		data_size = sys.getsizeof(data)
+	def send_data(self, msg_id, msg_data):
+		data_size = sys.getsizeof(msg_data)
 		head_pack = struct.pack("!I", data_size)
+		msg_id = struct.pack("!I", msg_id)
 		self._send_data_buffer += head_pack
-		self._send_data_buffer += data
+		self._send_data_buffer += msg_id
+		self._send_data_buffer += msg_data
 		self._net_io_mgr.add_write_need(self._socket_fd)
 
