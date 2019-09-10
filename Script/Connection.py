@@ -1,6 +1,7 @@
-from MessagePack import MessagePack
 import struct
 import sys
+
+HeaderSize = 4
 
 
 class Connection(object):
@@ -27,14 +28,14 @@ class Connection(object):
 		else:
 			self._receive_data_buffer += data
 			while True:
-				if len(self._receive_data_buffer) < MessagePack.HeaderSize:
+				if len(self._receive_data_buffer) < HeaderSize:
 					break
-				head_pack = struct.unpack('!I', self._receive_data_buffer[:MessagePack.HeaderSize])
+				head_pack = struct.unpack('!I', self._receive_data_buffer[:HeaderSize])
 				body_size = head_pack[0]
-				if len(self._receive_data_buffer) < MessagePack.HeaderSize + body_size:
+				if len(self._receive_data_buffer) < HeaderSize + body_size:
 					break
-				body = self._receive_data_buffer[MessagePack.HeaderSize: MessagePack.HeaderSize + body_size]
-				self._receive_data_buffer = self._receive_data_buffer[MessagePack.HeaderSize + body_size:]
+				body = self._receive_data_buffer[HeaderSize:HeaderSize + body_size]
+				self._receive_data_buffer = self._receive_data_buffer[HeaderSize + body_size:]
 				self.handle_new_message(body)
 
 	def handle_write_event(self):
