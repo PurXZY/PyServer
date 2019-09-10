@@ -7,25 +7,25 @@ MsgIdSize = 4
 
 class Connection(object):
 
-	def __init__(self, net_io_mgr, socket_fd):
+	def __init__(self, net_io_mgr, socket):
 		self._net_io_mgr = net_io_mgr
-		self._socket_fd = socket_fd
+		self._socket = socket
+		self._socket_fd = socket.fileno()
 		self._receive_data_buffer = bytes()
 		self._send_data_buffer = bytes()
 		self._add_read_need()
 
 	def _add_read_need(self):
-		self._net_io_mgr.add_read_need(self._socket_fd)
+		self._net_io_mgr.add_read_need(self._socket)
 
 	def _remove_read_need(self):
-		self._net_io_mgr.remove_read_need(self._socket_fd)
+		self._net_io_mgr.remove_read_need(self._socket)
 
 	def handle_read_event(self):
-		data = self._socket_fd.recv(1024)
+		data = self._socket.recv(1024)
+		print "data:%s" % (data, )
 		if not data:
-			self._remove_read_need()
-			self._net_io_mgr.remove_connection(self._socket_fd)
-			self._socket_fd.close()
+			self.close_connection()
 		else:
 			self._receive_data_buffer += data
 			while True:
@@ -43,13 +43,15 @@ class Connection(object):
 				self.handle_new_message(msg_id, body)
 
 	def handle_write_event(self):
-		length = self._socket_fd.send(self._send_data_buffer)
+		length = self._socket.send(self._send_data_buffer)
 		self._send_data_buffer = self._send_data_buffer[length:]
 		if not len(self._send_data_buffer):
-			self._net_io_mgr.remove_write_need(self._socket_fd)
+			self._net_io_mgr.remove_write_need(self._socket)
+		else:
+			print "need fix"
 
 	def handle_new_message(self, message_id, message_data):
-		print "new message id(%s) data(%s)" % (message_id, message_data)
+		print "new message id(%s) data(%s) fd(%s)" % (message_id, message_data, self._socket_fd)
 		self.send_data(122, "client ack")
 
 	def send_data(self, msg_id, msg_data):
@@ -59,5 +61,11 @@ class Connection(object):
 		self._send_data_buffer += head_pack
 		self._send_data_buffer += msg_id
 		self._send_data_buffer += msg_data
-		self._net_io_mgr.add_write_need(self._socket_fd)
+		self._net_io_mgr.add_write_need(self._socket)
+
+	def close_connection(self):
+		print "Close Connection fd(%s)" % (self._socket_fd, )
+		self._remove_read_need()
+		self._net_io_mgr.remove_connection(self._socket_fd)
+		self._socket.close()
 

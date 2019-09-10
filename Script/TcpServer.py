@@ -19,4 +19,4 @@ class TcpServer(object):
 
 	def new_client(self, socket_fd):
 		self._net_io_mgr.add_new_connection(socket_fd)
-		print "new client %s" % (socket_fd.getpeername(),)
+		print "new client %s fd(%s)" % (socket_fd.getpeername(), socket_fd.fileno())

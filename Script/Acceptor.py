@@ -15,7 +15,7 @@ class Acceptor(object):
 		self._listen_socket.listen(100)
 
 	def update(self):
-		in_fd, _, _ = select([self._listen_socket], [], [])
+		in_fd, _, _ = select([self._listen_socket], [], [], 1)
 		if len(in_fd):
 			self.accept_new_client()
 
