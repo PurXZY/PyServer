@@ -22,6 +22,5 @@ class Acceptor(object):
 	def accept_new_client(self):
 		client_socket, client_addr = self._listen_socket.accept()
 		client_socket.setblocking(False)
-		print "new client %s" % (client_socket.getpeername(),)
 		self._server.new_client(client_socket)
 
