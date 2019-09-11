@@ -7,6 +7,7 @@ def main():
 		"port": 12233,
 	}
 	server = TcpServer(config)
+	server.start()
 	server.run()
 
 

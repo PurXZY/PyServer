@@ -7,8 +7,8 @@ MsgIdSize = 4
 
 class Connection(object):
 
-	def __init__(self, net_io_mgr, socket):
-		self._net_io_mgr = net_io_mgr
+	def __init__(self, server, socket):
+		self._server = server
 		self._socket = socket
 		self._socket_fd = socket.fileno()
 		self._receive_data_buffer = bytes()
@@ -16,10 +16,10 @@ class Connection(object):
 		self._add_read_need()
 
 	def _add_read_need(self):
-		self._net_io_mgr.add_read_need(self._socket)
+		self._server.add_read_need(self._socket)
 
 	def _remove_read_need(self):
-		self._net_io_mgr.remove_read_need(self._socket)
+		self._server.remove_read_need(self._socket)
 
 	def handle_read_event(self):
 		data = self._socket.recv(1024)
@@ -46,13 +46,11 @@ class Connection(object):
 		length = self._socket.send(self._send_data_buffer)
 		self._send_data_buffer = self._send_data_buffer[length:]
 		if not len(self._send_data_buffer):
-			self._net_io_mgr.remove_write_need(self._socket)
-		else:
-			print "need fix"
+			self._server.remove_write_need(self._socket)
 
 	def handle_new_message(self, message_id, message_data):
 		print "new message id(%s) data(%s) fd(%s)" % (message_id, message_data, self._socket_fd)
-		self.send_data(122, "client ack")
+		self.send_data(122, bytearray("client ack", encoding='utf-8'))
 
 	def send_data(self, msg_id, msg_data):
 		data_size = sys.getsizeof(msg_data)
@@ -61,11 +59,11 @@ class Connection(object):
 		self._send_data_buffer += head_pack
 		self._send_data_buffer += msg_id
 		self._send_data_buffer += msg_data
-		self._net_io_mgr.add_write_need(self._socket)
+		self._server.add_write_need(self._socket)
 
 	def close_connection(self):
 		print "Close Connection fd(%s)" % (self._socket_fd, )
 		self._remove_read_need()
-		self._net_io_mgr.remove_connection(self._socket_fd)
+		self._server.remove_connection(self._socket)
 		self._socket.close()
 
