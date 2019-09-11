@@ -1,6 +1,6 @@
 import socket
 import select
-import Connection
+import Account
 
 
 class TcpServer(object):
@@ -39,7 +39,7 @@ class TcpServer(object):
 	def new_client(self):
 		client_socket, client_addr = self._listen_socket.accept()
 		client_socket.setblocking(False)
-		conn = Connection.Connection(self, client_socket)
+		conn = Account.Account(self, client_socket)
 		self._connections[client_socket] = conn
 		print "new client %s fd(%s)" % (client_socket.getpeername(), client_socket.fileno())
 

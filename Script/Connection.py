@@ -23,7 +23,7 @@ class Connection(object):
 
 	def handle_read_event(self):
 		data = self._socket.recv(1024)
-		print "data:%s" % (data, )
+		# print "data:%s" % (data, )
 		if not data:
 			self.close_connection()
 		else:
@@ -50,7 +50,7 @@ class Connection(object):
 
 	def handle_new_message(self, message_id, message_data):
 		print "new message id(%s) data(%s) fd(%s)" % (message_id, message_data, self._socket_fd)
-		self.send_data(122, bytearray("client ack", encoding='utf-8'))
+		# self.send_data(122, bytearray("client ack", encoding='utf-8'))
 
 	def send_data(self, msg_id, msg_data):
 		data_size = sys.getsizeof(msg_data)
