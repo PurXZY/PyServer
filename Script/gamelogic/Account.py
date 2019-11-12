@@ -19,6 +19,10 @@ class Account(Connection.Connection):
 			self._on_login()
 		elif message_id == base_pb2.IntoRoomReq:
 			self._on_into_room()
+		elif message_id == base_pb2.CastSkillReq:
+			msg = base_pb2.CastSkillC2SMsg
+			msg.ParseFromString(message_data)
+			self._on_cast_skill(msg.SkillId, msg.TargetIds)
 
 	def _on_login(self):
 		msg = base_pb2.LoginS2CMsg()
@@ -27,3 +31,6 @@ class Account(Connection.Connection):
 
 	def _on_into_room(self):
 		TurnRoom(self)
+
+	def _on_cast_skill(self, skill_id, target_ids):
+		self.logger.debug("cast skill id($i) target_ids(%s)", skill_id, target_ids)
