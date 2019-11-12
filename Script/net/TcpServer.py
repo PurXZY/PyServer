@@ -1,11 +1,14 @@
 import socket
 import select
-import Account
+from gamelogic import Account
+import logging
 
 
 class TcpServer(object):
 
 	def __init__(self, config):
+		self.logger = logging.getLogger("TcpServer")
+		self.logger.setLevel(logging.DEBUG)
 		self._host = config.get("host", None)
 		self._port = config.get("port", None)
 		self._listen_socket = None
@@ -22,7 +25,7 @@ class TcpServer(object):
 		self._need_read_sockets.append(self._listen_socket)
 
 	def run(self):
-		print "Server Start"
+		self.logger.info("Server Start")
 		while True:
 			in_sockets, out_sockets, _ = select.select(self._need_read_sockets, self._need_write_sockets, [], 0.1)
 			for obj in in_sockets:
@@ -41,7 +44,7 @@ class TcpServer(object):
 		client_socket.setblocking(False)
 		conn = Account.Account(self, client_socket)
 		self._connections[client_socket] = conn
-		print "new client %s fd(%s)" % (client_socket.getpeername(), client_socket.fileno())
+		self.logger.info("new client %s fd(%s)", client_socket.getpeername(), client_socket.fileno())
 
 	def remove_connection(self, socket_obj):
 		self._connections.pop(socket_obj)
