@@ -27,7 +27,12 @@ class TcpServer(object):
 	def run(self):
 		self.logger.info("Server Start")
 		while True:
-			in_sockets, out_sockets, _ = select.select(self._need_read_sockets, self._need_write_sockets, [], 0.1)
+			in_sockets, out_sockets, error_sockets = select.select(self._need_read_sockets, self._need_write_sockets, self._need_read_sockets, 0.1)
+			for obj in error_sockets:
+				self.logger.error("error socket:%s", obj)
+				conn = self._connections.get(obj, None)
+				if conn:
+					conn.close_connection()
 			for obj in in_sockets:
 				if obj == self._listen_socket:
 					self.new_client()
