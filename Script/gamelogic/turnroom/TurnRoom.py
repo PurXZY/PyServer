@@ -20,6 +20,8 @@ class TurnRoom:
 	def broadcast_msg(self, msg_id, msg):
 		self._room_owner.send_data(msg_id, msg)
 
+# --------------------------logic--------------------------
+
 	def _start_logic(self):
 		self._create_all_battle_entities()
 		self._sync_all_battle_entities()
@@ -28,6 +30,13 @@ class TurnRoom:
 		self._sort_entity_speed()
 		self._cur_move_entity_id = self._sorted_entity_ids[self._cur_small_turn]
 		self._sync_turn_info()
+
+	def _sort_entity_speed(self):
+		ret = sorted(self._entities.iteritems(), key=lambda _x: _x[1].MoveSpeed, reverse=True)
+		self._sorted_entity_ids = [x[0] for x in ret]
+		self.logger.debug("sort ret:%s", self._sorted_entity_ids)
+
+# --------------------------entity mgr--------------------------
 
 	def _create_all_battle_entities(self):
 		enemy_data = {
@@ -49,10 +58,7 @@ class TurnRoom:
 	def get_entity(self, entity_id):
 		return self._entities.get(entity_id, None)
 
-	def _sort_entity_speed(self):
-		ret = sorted(self._entities.iteritems(), key=lambda _x: _x[1].MoveSpeed, reverse=True)
-		self._sorted_entity_ids = [x[0] for x in ret]
-		self.logger.debug("sort ret:%s", self._sorted_entity_ids)
+# --------------------------sync to client--------------------------
 
 	def _sync_avatar_into_room(self):
 		msg = base_pb2.IntoRoomS2CMsg()
